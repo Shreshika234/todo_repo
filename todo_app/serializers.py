@@ -15,7 +15,7 @@ class ToDoItemSerializer(serializers.ModelSerializer):
     # created_date = serializers.DateField(default=datetime.date.today)
     # due_date = serializers.DateField()
     status = serializers.CharField(max_length=20)#, choices=STATUS_CHOICES, default='PENDING')
-
+    # file = serializers.FileField(upload_to="taskfiles/",max_length=150,null=True,default=None)
 
     class Meta:
         model = ToDoItem

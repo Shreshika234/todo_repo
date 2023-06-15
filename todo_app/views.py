@@ -1,3 +1,4 @@
+from django.shortcuts import render
 # from requests import Response
 from rest_framework import status
 from rest_framework.response import Response
@@ -5,6 +6,7 @@ from rest_framework.views import APIView
 from todo_app.models import ToDoItem
 from todo_app.serializers import ToDoItemSerializer
 
+# Create your views here.
 class Details(APIView):
 
 
@@ -13,7 +15,7 @@ class Details(APIView):
         serializers = ToDoItemSerializer(result,many=True)
         data_list = serializers.data
         return Response(data_list,status=status.HTTP_200_OK)
-    
+  
 
     def post(self,request):
         serializer = ToDoItemSerializer(data=request.data)
@@ -23,12 +25,20 @@ class Details(APIView):
         else:
             return Response({"status":"error","data":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, request, id=None):
-        
-        drinks = ToDoItem.objects.filter(id=id)
-        drinks.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
+    def update(self, request, *args, **kwargs):
+        try:
+            # Get the instance to update
+            instance = ToDoItem.objects.get(pk=kwargs['pk'])
+        except ToDoItem.DoesNotExist:
+            return Response("ToDoItem not found", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ToDoItemSerializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response

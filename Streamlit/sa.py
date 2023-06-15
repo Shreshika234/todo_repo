@@ -81,10 +81,9 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
 
     selected = option_menu(
         menu_title= "TO DO ",
-        options = ["Tasks_todo","Pending", "History"],
+        options = ["Tasks_todo","Pending" ,"History"],
         orientation = "horizontal"
     )
-
     if selected == "Pending":
         response = requests.get("http://127.0.0.1:8000/post/")
         if response.status_code==200:
@@ -92,6 +91,11 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
             filtered_data = [obj for obj in df if obj["status"] in ["PENDING", "IN_PROGRESS"] and obj["username"] == UserName]
             df = pd.DataFrame(filtered_data)
             st.write(df)
+        # for obj in  filtered_data :
+        #     if obj["status"] == ["PENDING" , "IN_PROGRESS"]:
+        #         response = requests.update("http://127.0.0.1:8000/post/")
+
+
 
 
     if selected == "History":
@@ -107,6 +111,7 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
         st.subheader("ADD TASK")
         username = st.text_input("User Name",value=UserName)
         title = st.text_input("Task Title")
+        # description = st.text_input("Description")
         status = st.selectbox('Status', ['PENDING', 'COMPLETED', 'IN_PROGRESS'])
 
         if status == "COMPLETED":
@@ -119,15 +124,19 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                     f.write(uploaded_file.getbuffer())
                     st.success("File saved successfully!")
 
-                st.write("") 
+                # Redirect to another page with description text field
+                st.write("")  # Add some spacing
                 st.header("Description")
                 description = st.text_area("Enter description", "")
 
                 # Do something with the description (e.g., save it to a database)
-                # if st.button("Save Description"):  
-                #     st.success("Description saved successfully!")
+                if st.button("Save Description"):
+                    # Perform the save operation here
+                    st.success("Description saved successfully!")
+
+
         elif status in ["PENDING", "IN_PROGRESS"]:
-            st.write("")  
+            st.write("")  # Add some spacing
             description = st.text_area("Description", value="Description cannot be added", key="description", disabled=True)
             st.info("Description cannot be edited for PENDING or IN_PROGRESS tasks.")
 

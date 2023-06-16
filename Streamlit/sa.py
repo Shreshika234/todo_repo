@@ -1,3 +1,4 @@
+import json
 import streamlit as st
 import requests
 import datetime
@@ -6,6 +7,7 @@ from datetime import datetime
 import pandas as pd
 from streamlit_option_menu import option_menu
 from streamlit_modal import Modal
+
 
 
 st.set_page_config(layout="wide",initial_sidebar_state="expanded",)
@@ -84,19 +86,66 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
         options = ["Tasks_todo","Pending" ,"History"],
         orientation = "horizontal"
     )
+    # if selected == "Pending":
+    #     response = requests.get("http://127.0.0.1:8000/post/")
+    #     if response.status_code==200:
+    #         df=response.json()
+    #         filtered_data = [obj for obj in df if obj["status"] in ["PENDING", "IN_PROGRESS"] and obj["username"] == UserName]
+    #         df = pd.DataFrame(filtered_data)
+    #         st.write(df)
+#         import requests
+# import streamlit as st
+
     if selected == "Pending":
         response = requests.get("http://127.0.0.1:8000/post/")
-        if response.status_code==200:
-            df=response.json()
-            filtered_data = [obj for obj in df if obj["status"] in ["PENDING", "IN_PROGRESS"] and obj["username"] == UserName]
-            df = pd.DataFrame(filtered_data)
-            st.write(df)
-        # for obj in  filtered_data :
-        #     if obj["status"] == ["PENDING" , "IN_PROGRESS"]:
-        #         response = requests.update("http://127.0.0.1:8000/post/")
+        
+        if response.status_code == 200:
+       
+            data = response.json()
+            filtered_data = [obj for obj in data if obj["status"] in ["PENDING", "IN_PROGRESS"] and obj["username"] == UserName]
+            
+            title_options = [obj["title"] for obj in filtered_data]
+            selected_title = st.radio("Pending and In_progress tasks", title_options)
+           
+            filtered_data = [obj for obj in filtered_data if obj["title"] == selected_title]
+            
+            
+            for obj in filtered_data:
+                obj["status"] = "COMPLETED"
+                obj["description"] = st.text_area("Enter description", "")
+                if st.button("Save"):
+                    # updated_data = json.dumps(filtered_data)
+              
+                    update_response = requests.post("http://127.0.0.1:8000/post/", json=filtered_data)
+                    if response.status_code == 200:
+                        st.write(filtered_data)
+                        st.write(update_response)
+                        
+                        
+                        st.success("Task submitted successfully!")
 
+                        if obj["status"] == "COMPLETED":
+                            uploaded_file = st.file_uploader("Upload a file")
+                            if uploaded_file is not None:
+                                file_name = uploaded_file.name
+                                save_directory = "/home/shreshika/todo_list/todo_project/taskfiles"  
+                                save_path = os.path.join(save_directory, file_name)
+                                with open(save_path, "wb") as f:
+                                    f.write(uploaded_file.getbuffer())
+                                    st.success("File saved successfully!")
 
+                                # Redirect to another page with description text field
+                                st.write("")  # Add some spacing
+                                st.header("Description")
+                                description = st.text_area("Enter description", "")
 
+                                # Do something with the description (e.g., save it to a database)
+                                if st.button("Save Description"):
+                                    # Perform the save operation here
+                                    st.success("Description saved successfully!")  
+                    else:
+                        st.error("Failed to submit the task. Please try again.")
+                    
 
     if selected == "History":
 
@@ -114,28 +163,28 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
         # description = st.text_input("Description")
         status = st.selectbox('Status', ['PENDING', 'COMPLETED', 'IN_PROGRESS'])
 
-        if status == "COMPLETED":
-            uploaded_file = st.file_uploader("Upload a file")
-            if uploaded_file is not None:
-                file_name = uploaded_file.name
-                save_directory = "/home/shreshika/todo_list/todo_project/taskfiles"  
-                save_path = os.path.join(save_directory, file_name)
-                with open(save_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                    st.success("File saved successfully!")
+        # if status == "COMPLETED":
+        #     uploaded_file = st.file_uploader("Upload a file")
+        #     if uploaded_file is not None:
+        #         file_name = uploaded_file.name
+        #         save_directory = "/home/shreshika/todo_list/todo_project/taskfiles"  
+        #         save_path = os.path.join(save_directory, file_name)
+        #         with open(save_path, "wb") as f:
+        #             f.write(uploaded_file.getbuffer())
+        #             st.success("File saved successfully!")
 
-                # Redirect to another page with description text field
-                st.write("")  # Add some spacing
-                st.header("Description")
-                description = st.text_area("Enter description", "")
+        #         # Redirect to another page with description text field
+        #         st.write("")  # Add some spacing
+        #         st.header("Description")
+        #         description = st.text_area("Enter description", "")
 
-                # Do something with the description (e.g., save it to a database)
-                if st.button("Save Description"):
-                    # Perform the save operation here
-                    st.success("Description saved successfully!")
+        #         # Do something with the description (e.g., save it to a database)
+        #         if st.button("Save Description"):
+        #             # Perform the save operation here
+        #             st.success("Description saved successfully!")
 
 
-        elif status in ["PENDING", "IN_PROGRESS"]:
+        if status in ["PENDING", "IN_PROGRESS"]:
             st.write("")  # Add some spacing
             description = st.text_area("Description", value="Description cannot be added", key="description", disabled=True)
             st.info("Description cannot be edited for PENDING or IN_PROGRESS tasks.")

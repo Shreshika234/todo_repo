@@ -26,18 +26,15 @@ class Details(APIView):
             return Response({"status":"error","data":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
         
 
-    def update(self, request, *args, **kwargs):
-        try:
-            # Get the instance to update
-            instance = ToDoItem.objects.get(pk=kwargs['pk'])
-        except ToDoItem.DoesNotExist:
-            return Response("ToDoItem not found", status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ToDoItemSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def patch(self, request):
+    #     title = request.data.get('title')
+    #     result = ToDoItem.objects.get(title=title)
+    #     serializer = ToDoItemSerializer(result,data=request.data,partial=True)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response({"data":serializer.data},status=status.HTTP_200_OK)
+    #     else:
+    #         return Response({"status":"error","data":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
 from rest_framework import permissions
 from rest_framework.views import APIView

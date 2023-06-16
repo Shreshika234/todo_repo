@@ -126,6 +126,8 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                 # Do something with the description (e.g., save it to a database)
                 # if st.button("Save Description"):  
                 #     st.success("Description saved successfully!")
+
+                
         elif status in ["PENDING", "IN_PROGRESS"]:
             st.write("")  
             description = st.text_area("Description", value="Description cannot be added", key="description", disabled=True)

@@ -1,20 +1,13 @@
-# todo_list/todo_app/models.p
 from django.db import models
+from django.conf import settings
 
-class ToDoItem(models.Model):
-
-    STATUS_CHOICES = [
-
-        ('Pending','PENDING',),
-        ('Completed','COMPLETED'),
-        ('In Progress','IN_PROGRESS'),
-    ]
-    username = models.CharField(max_length=20)
-    title = models.CharField(max_length=100)
-    description = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
-    # file = models.FileField(upload_to="taskfiles/",max_length=150,null=True,default=None)
+class ToDo(models.Model):
+    user_name = models.CharField(max_length=20)
+    task  = models.CharField(max_length=200)
+    description = models.CharField(max_length=1000,blank=True,null=True)
+    status = models.CharField(max_length=20,default="Pending")
+    file = models.FileField(upload_to="files/",max_length=150,null=True,default=None)
 
     def __str__(self):
-        return self.title
+        return self.task
 

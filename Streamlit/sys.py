@@ -1,10 +1,11 @@
 import streamlit as st
 import requests
 import datetime
-import os
 from datetime import datetime
 import pandas as pd
 from streamlit_option_menu import option_menu
+from django.core.serializers import serialize
+from django.http import HttpResponse
 from streamlit_modal import Modal
 
 
@@ -41,6 +42,7 @@ def get_data(token):
     else:
         return None
 
+
 if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     
     st.markdown("<h1 style='text-align: center; '>LOGIN</h1> <br>", unsafe_allow_html=True)
@@ -74,79 +76,142 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     
 
 if 'logged_in' in st.session_state and st.session_state['logged_in']:
-
     token = st.session_state['token']  
     UserName = st.session_state['username']
     st.markdown("<u><h1 style='text-align: center'>To-Do List</h1><u> <br>", unsafe_allow_html=True)
 
-    selected = option_menu(
-        menu_title= "TO DO ",
-        options = ["Tasks_todo","Pending", "History"],
-        orientation = "horizontal"
-    )
-
-    if selected == "Pending":
-        response = requests.get("http://127.0.0.1:8000/post/")
-        if response.status_code==200:
-            df=response.json()
-            filtered_data = [obj for obj in df if obj["status"] in ["PENDING", "IN_PROGRESS"] and obj["username"] == UserName]
-            df = pd.DataFrame(filtered_data)
-            st.write(df)
-
-
-    if selected == "History":
-
-        response = requests.get("http://127.0.0.1:8000/post/")
-        if response.status_code==200:
-            df=response.json()
-            filtered_data = [obj for obj in df if obj["status"] == "COMPLETED" and obj["username"]==UserName]
-            df = pd.DataFrame(filtered_data)
-            st.write(df)
-
-    if selected == "Tasks_todo":
-        st.subheader("ADD TASK")
-        username = st.text_input("User Name",value=UserName)
-        title = st.text_input("Task Title")
-        status = st.selectbox('Status', ['PENDING', 'COMPLETED', 'IN_PROGRESS'])
-
-        if status == "COMPLETED":
-            uploaded_file = st.file_uploader("Upload a file")
-            if uploaded_file is not None:
-                file_name = uploaded_file.name
-                save_directory = "/home/shreshika/todo_list/todo_project/taskfiles"  
-                save_path = os.path.join(save_directory, file_name)
-                with open(save_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                    st.success("File saved successfully!")
-
-                st.write("") 
-                st.header("Description")
-                description = st.text_area("Enter description", "")
-
-                # Do something with the description (e.g., save it to a database)
-                # if st.button("Save Description"):  
-                #     st.success("Description saved successfully!")
-
+    col1,col2 = st.columns([8,2])
+    with col1:
+        selected = option_menu(
+            menu_title="",
+            options=["TASK","HISTORY",],
+            icons=["card-checklist","journal-text"],
+            menu_icon="cast",
+            default_index=0,
+            orientation="horizontal",
+        )
+    
+        if selected == "TASK":
+            
+            a,b = st.columns([3,7])
+            with a:
+                with st.form(key="form",clear_on_submit=True):             
+                    task = st.text_input("Tasks",key='task')
+                    add = st.form_submit_button("ADD")    
                 
-        elif status in ["PENDING", "IN_PROGRESS"]:
-            st.write("")  
-            description = st.text_area("Description", value="Description cannot be added", key="description", disabled=True)
-            st.info("Description cannot be edited for PENDING or IN_PROGRESS tasks.")
-
-
-           
-        if st.button("ADD"):
-               
-            task_data = {
-                "username":username,
-                "title": title,
-                "description": description,
-                "status": status
-            }
-            response = requests.post("http://127.0.0.1:8000/post/", json=task_data)
+            with b:
+                if task:
+                    if add:
+                        st.session_state['session_state'] = {'task': ''}
+                        url = local_host + "todo/?type=create"
+                        headers = {'Authorization': f'Bearer {token}'}
+                        params={
+                            "userName":UserName,
+                            "task":task,
+                            "discription":"",
+                            "status":"Pending",
+                        }        
+                        response = requests.get(url,headers=headers,params=params)
+                        if response.status_code == 200: 
+                            pass
+                        else:
+                            st.error("You dont have permission to create the task")
+                        
+                params={
+                            "userName":UserName,
+                        }     
+                
+                url = local_host + "todo/?type=read"
+                headers = {'Authorization': f'Bearer {token}'}
+                response = requests.get(url,headers=headers,params=params)
+                if response.status_code == 200:
+                    data = response.json()
+                    task = data['task']  
+                    for i in range(len(task)):
+                        # st.radio(task[i], task, index=i, key=task[i])
+                        tasks = st.checkbox(task[i],key=task[i])
+                        if tasks:
+                            with st.container():
+                                with st.form(key="forms",clear_on_submit=True):
+                                    description = st.text_area("Description")
+                                    file=st.file_uploader("please choose a file")
+                                    submit = st.form_submit_button("SUBMIT")
+                                    if description:
+                                        if submit :
+                                                url = local_host + "todo/?type=uploadfile"
+                                                headers = {'Authorization': f'Bearer {token}'}
+                                                params = {
+                                                    "userName":UserName,
+                                                    "description":description,
+                                                    "status":"Completed",
+                                                    "task":task[i],
+                                                }
+                                                files = {
+                                                    'file': file
+                                                }
+                                                st.success("Submited successfully")
+                                                response = requests.post(url,headers=headers,params=params,files=files)
+                                                if response.status_code == 200:
+                                                    st.success("DONE")
+                                                else:
+                                                    st.error("ERROR")     
+                else:
+                    st.error(f'Error: {response.status_code}')
+                    
+                              
+        if selected == "HISTORY":
+            params={
+                    "userName":UserName,
+                }     
+            
+            url = local_host + "todo/?type=history"
+            headers = {'Authorization': f'Bearer {token}'}
+            response = requests.get(url,headers=headers,params=params)
+            
+                        
             if response.status_code == 200:
-                st.success("Task submitted successfully!")
-            else:
-                st.error("Failed to submit the task. Please try again.")
+                data = response.json()
+                tasks = data['tasks']
+                files = data['files']
+                description = data['description']
+                p,q = st.columns(2)
+                with p: 
+                    st.header("COMPLETED TASKS")
+                with q:
+                    st.header("TASK DETAILS")
 
+                for i in range(len(tasks)):
+                  
+                    with p:                      
+                        details = st.button(f'{i+1}.{tasks[i]}')
+                    # Apply CSS styles to hide the button structure
+                    with q:                      
+                        button_style = """
+                            <style>
+                            .stButton>button {
+                                background: none;
+                                border: none;
+                                padding: 0;
+                                margin: 0;
+                                font-size: inherit;
+                                font-family: inherit;
+                                cursor: pointer;
+                                outline: inherit;
+                            }
+                            </style>
+                        """
+                        st.markdown(button_style, unsafe_allow_html=True)
+                        if details:
+                            st.write("Description:", description[i])                        
+                            st.write("click the link to download the file:", files[i])         
+            else:
+                st.error("Failed to fetch data from the backend")
+
+                       
+    with col2:
+        a,b = st.columns([4,6])
+        with b:
+            image = "/home/shreshika/Downloads/dp.jpg"
+            st.image(image, caption=UserName, width=160)
+        
                

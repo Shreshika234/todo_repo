@@ -1,12 +1,7 @@
 import streamlit as st
 import requests
-import datetime
-from datetime import datetime
-import pandas as pd
 from streamlit_option_menu import option_menu
-from django.core.serializers import serialize
-from django.http import HttpResponse
-from streamlit_modal import Modal
+
 
 
 st.set_page_config(layout="wide",initial_sidebar_state="expanded",)
@@ -44,17 +39,29 @@ def get_data(token):
 
 
 if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
+    st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://img.freepik.com/premium-photo/empty-white-wall-background-with-sunlight-shadow_386045-98.jpg?w=2000");
+             background-attachment: fixed;
+             background-size: cover
+         }}
+         </style>
+         """,
+    unsafe_allow_html=True
+     )
     
-    st.markdown("<h1 style='text-align: center; '>LOGIN</h1> <br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; '><u>LOGIN</h1></u><br>", unsafe_allow_html=True)
     col1,col2,col3 = st.columns(3)
     with col1:
         st.write("")
     with col2:
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
+        username = st.text_input(":blue[Username]")
+        password = st.text_input(":blue[Password]", type="password")
         col1, col2 ,col3= st.columns(3)
         with col2:
-            login_button = st.button("Login")
+            login_button = st.button(":blue[Login]")
 
     if login_button:
         token = get_jwt_token(username, password)
@@ -68,7 +75,7 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
                 st.session_state['username'] = username
                 st.experimental_rerun()
             else:
-                 st.write("You do not have permission to access the next page")
+                 st.write("You cannot access next page")
 
         else:
             st.error("Invalid username or password.")
@@ -76,19 +83,32 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     
 
 if 'logged_in' in st.session_state and st.session_state['logged_in']:
+    st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://images.pexels.com/photos/114979/pexels-photo-114979.jpeg?cs=srgb&dl=pexels-veeterzy-114979.jpg&fm=jpg");
+             background-attachment: fixed;
+             background-size: cover
+         }}
+         </style>
+         """,
+    unsafe_allow_html=True
+     )
+
     token = st.session_state['token']  
     UserName = st.session_state['username']
-    st.markdown("<u><h1 style='text-align: center'>To-Do List</h1><u> <br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: red'>To-Do List</h1>", unsafe_allow_html=True)
 
     col1,col2 = st.columns([8,2])
     with col1:
         selected = option_menu(
-            menu_title="",
-            options=["TASK","HISTORY",],
-            icons=["card-checklist","journal-text"],
-            menu_icon="cast",
-            default_index=0,
-            orientation="horizontal",
+            menu_title = "",
+            options = ["TASK","HISTORY",],
+            icons = ["card-checklist","journal-text"],
+            menu_icon = "cast",
+            default_index = 1,
+            orientation = "horizontal",
         )
     
         if selected == "TASK":
@@ -96,8 +116,8 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
             a,b = st.columns([3,7])
             with a:
                 with st.form(key="form",clear_on_submit=True):             
-                    task = st.text_input("Tasks",key='task')
-                    add = st.form_submit_button("ADD")    
+                    task = st.text_input("Task",key='task')
+                    add = st.form_submit_button(":red[ADD]")    
                 
             with b:
                 if task:
@@ -108,14 +128,14 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                         params={
                             "userName":UserName,
                             "task":task,
-                            "discription":"",
+                            "description":"",
                             "status":"Pending",
                         }        
                         response = requests.get(url,headers=headers,params=params)
                         if response.status_code == 200: 
                             pass
                         else:
-                            st.error("You dont have permission to create the task")
+                            st.error("You don't have permission to create the task")
                         
                 params={
                             "userName":UserName,
@@ -134,7 +154,7 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                             with st.container():
                                 with st.form(key="forms",clear_on_submit=True):
                                     description = st.text_area("Description")
-                                    file=st.file_uploader("please choose a file")
+                                    file = st.file_uploader("Please Choose a File")
                                     submit = st.form_submit_button("SUBMIT")
                                     if description:
                                         if submit :
@@ -149,10 +169,10 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                                                 files = {
                                                     'file': file
                                                 }
-                                                st.success("Submited successfully")
+                                                st.success("Submited Successfully")
                                                 response = requests.post(url,headers=headers,params=params,files=files)
                                                 if response.status_code == 200:
-                                                    st.success("DONE")
+                                                    pass
                                                 else:
                                                     st.error("ERROR")     
                 else:
@@ -212,6 +232,6 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
         a,b = st.columns([4,6])
         with b:
             image = "/home/shreshika/Downloads/dp.jpg"
-            st.image(image, caption=UserName, width=160)
+            st.image(image, caption=UserName, width=200)
         
                

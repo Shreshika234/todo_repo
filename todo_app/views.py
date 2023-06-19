@@ -6,16 +6,9 @@ from rest_framework.response import Response
 import jwt
 from django.conf import settings
 from .models import ToDo
-from django.views.decorators.csrf import csrf_exempt
-# from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
-
-
-# Create your views here.
-def index(request):
-    return HttpResponse("index")
 
 def history(request,userName):
     data = ToDo.objects.filter(user_name=userName, status="Completed")
@@ -35,14 +28,6 @@ def history(request,userName):
         "description": description,
     }
     return response_data
-
-
-def delete_tasks(request):
-    selected_tasks = request.data.get('tasks', [])
-    ToDo.objects.filter(task__in=selected_tasks).delete()
-    return "deleted"
-    
-    
     
 def create_task(request,userName,task,description,status):
     data = ToDo.objects.all()
@@ -57,7 +42,7 @@ def create_task(request,userName,task,description,status):
             description=description,
             status=status
             )
-        print("obj created successfully")
+        print("object created successfully")
 
     
 def read_task(request,userName):
@@ -111,8 +96,6 @@ class Todo(APIView):
              
             if Type == "history":
                 response = history(request,userName)
-            elif Type == "delete":
-                response = delete_tasks(request)
             elif Type == "create":
                 response = create_task(request,userName,task,discription,status)
             elif Type == "read":

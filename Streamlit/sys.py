@@ -230,10 +230,10 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                 st.error("Failed to fetch data from the backend")
 
                        
-    with col2:
-        a,b = st.columns([4,6])
-        with b:
-            image = "/home/shreshika/Downloads/dp.jpg"
-            st.image(image, caption=UserName, width=200)
+    # with col2:
+    #     a,b = st.columns([4,6])
+    #     with b:
+    #         image = "/home/shreshika/Downloads/dp.jpg"
+    #         st.image(image, caption=UserName, width=200)
         
                

@@ -57,11 +57,11 @@ if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
     with col1:
         st.write("")
     with col2:
-        username = st.text_input(":blue[Username]")
-        password = st.text_input(":blue[Password]", type="password")
+        username = st.text_input("**:blue[Username]**")
+        password = st.text_input("**:blue[Password]**", type="password")
         col1, col2 ,col3= st.columns(3)
         with col2:
-            login_button = st.button(":blue[Login]")
+            login_button = st.button("**:blue[Login]**")
 
     if login_button:
         token = get_jwt_token(username, password)
@@ -98,6 +98,8 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
 
     token = st.session_state['token']  
     UserName = st.session_state['username']
+
+
     st.markdown("<h1 style='text-align: center; color: red'>To-Do List</h1>", unsafe_allow_html=True)
 
     col1,col2 = st.columns([8,2])
@@ -116,8 +118,8 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
             a,b = st.columns([3,7])
             with a:
                 with st.form(key="form",clear_on_submit=True):             
-                    task = st.text_input("Task",key='task')
-                    add = st.form_submit_button(":red[ADD]")    
+                    task = st.text_input(":pencil:**TASK**",key='task')
+                    add = st.form_submit_button("**:red[ADD]**")    
                 
             with b:
                 if task:
@@ -153,9 +155,9 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                         if tasks:
                             with st.container():
                                 with st.form(key="forms",clear_on_submit=True):
-                                    description = st.text_area("Description")
-                                    file = st.file_uploader("Please Choose a File")
-                                    submit = st.form_submit_button("SUBMIT")
+                                    description = st.text_area("**Description**")
+                                    file = st.file_uploader("**Please Choose a File**")
+                                    submit = st.form_submit_button("**SUBMIT**")
                                     if description:
                                         if submit :
                                                 url = local_host + "todo/?type=uploadfile"
@@ -203,7 +205,7 @@ if 'logged_in' in st.session_state and st.session_state['logged_in']:
                 for i in range(len(tasks)):
                   
                     with p:                      
-                        details = st.button(f'{i+1}.{tasks[i]}')
+                        details = st.button(f'{i+1} . {tasks[i]}')
                     # Apply CSS styles to hide the button structure
                     with q:                      
                         button_style = """
